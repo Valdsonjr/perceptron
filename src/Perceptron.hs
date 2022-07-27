@@ -1,12 +1,11 @@
-{-# LANGUAGE RecordWildCards #-}
 module Perceptron where
 
 newtype Perceptron = Perceptron { pesos :: [Double] }
     deriving (Eq, Show)
 
 data ConfiguracaoTreinamento = Config {
-    nrDeEpocas :: Word,
-    taxaDeAprendizado :: Double
+    _nrEpocas :: Word,
+    _taxaAprendizado :: Double
 }
 
 perceptron :: [Double] -> Perceptron
@@ -20,17 +19,16 @@ treinar :: ConfiguracaoTreinamento -- ^ Configuração de treinamento do percept
   -> [([Double], Double)] -- ^ Lista de amostras e resultados esperados
   -> Perceptron -- ^ Rede perceptron não treinada
   -> Perceptron
-treinar Config{..} amostras p
-    | nrDeEpocas == 0 || p == novoP = p
+treinar (Config nrEpocas taxaAprendizado) amostras p
+    | taxaAprendizado == 0 || p == novoP = p
     | otherwise = treinar config amostras novoP
     where
-    config = Config (nrDeEpocas - 1) taxaDeAprendizado
+    config = Config (nrEpocas - 1) taxaAprendizado
     novoP = foldr atualizar p amostras
     atualizar (amostra, resultadoEsperado) rede =
         let resultadoObtido = classificar rede amostra
             erro = resultadoEsperado - resultadoObtido
-        in
-        Perceptron $
-            zipWith (\w a -> w + a * taxaDeAprendizado * erro)
+        in Perceptron $
+            zipWith (\w a -> w + a * taxaAprendizado * erro)
             (pesos rede)
             (1 : amostra)
